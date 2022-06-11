@@ -11,7 +11,7 @@ export const internalServerError = (): HttpResponse => ({
   statusCode: 500,
 })
 
-export const ok = (): HttpResponse => ({
-  body: undefined,
+export const ok = (body?: any): HttpResponse => ({
+  body: body,
   statusCode: 200,
 })

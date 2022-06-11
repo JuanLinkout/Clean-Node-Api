@@ -43,9 +43,9 @@ export class SignUpController implements Controller {
         password,
         name,
       }
-      this.addAccount.add(addAccountModel)
+      const account = this.addAccount.add(addAccountModel)
 
-      return ok()
+      return ok(account)
     } catch (e) {
       return internalServerError()
     }
