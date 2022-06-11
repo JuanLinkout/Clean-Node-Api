@@ -1,10 +1,22 @@
+import { AccountModel } from '../../domain/models'
+import { AddAccount, AddAccountModel } from '../../domain/usecases'
 import { InvalidParamError, MissingParamError, ServerError } from '../errors'
 import { EmailValidator } from '../protocols'
 import { SignUpController } from './signup'
 
-interface SutTypes {
-  sut: SignUpController
-  emailValidatorStub: EmailValidator
+const makeAddAccountStub = (): AddAccount => {
+  class AddAccountStub implements AddAccount {
+    add(account: AddAccountModel): AccountModel {
+      return {
+        id: 'valid_id',
+        email: 'valid_email',
+        name: 'valid_name',
+        password: 'valid_password',
+      }
+    }
+  }
+
+  return new AddAccountStub()
 }
 
 const makeEmailValidatorStub = (): EmailValidator => {
@@ -17,13 +29,21 @@ const makeEmailValidatorStub = (): EmailValidator => {
   return new EmailValidatorStub()
 }
 
+interface SutTypes {
+  sut: SignUpController
+  emailValidatorStub: EmailValidator
+  addAccountStub: AddAccount
+}
+
 const makeSut = (): SutTypes => {
   const emailValidatorStub = makeEmailValidatorStub()
-  const sut = new SignUpController(emailValidatorStub)
+  const addAccountStub = makeAddAccountStub()
+  const sut = new SignUpController(emailValidatorStub, addAccountStub)
 
   return {
     sut,
     emailValidatorStub,
+    addAccountStub,
   }
 }
 
@@ -152,5 +172,24 @@ describe('SignUp Controller', () => {
     const httpResponse = sut.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body).toEqual(new ServerError())
+  })
+
+  test('Should call addAccount with correct values', () => {
+    const { sut, addAccountStub } = makeSut()
+    const addSpy = jest.spyOn(addAccountStub, 'add')
+    const httpRequest = {
+      body: {
+        name: 'any_name',
+        email: 'any_email',
+        password: 'any_password',
+        passwordConfirmation: 'any_password',
+      },
+    }
+    sut.handle(httpRequest)
+    expect(addSpy).toHaveBeenCalledWith({
+      name: 'any_name',
+      email: 'any_email',
+      password: 'any_password',
+    })
   })
 })
