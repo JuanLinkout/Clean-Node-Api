@@ -35,7 +35,7 @@ describe('SignUp Controller', () => {
         body: {
           email: 'any_email',
           password: 'any_password',
-          passwordConfirmation: 'any_password_confirmation',
+          passwordConfirmation: 'any_password',
         },
       },
     }
@@ -50,7 +50,7 @@ describe('SignUp Controller', () => {
       body: {
         name: 'any_name',
         password: 'any_password',
-        passwordConfirmation: 'any_password_confirmation',
+        passwordConfirmation: 'any_password',
       },
     }
     const httpResponse = sut.handle(httpRequest)
@@ -64,7 +64,7 @@ describe('SignUp Controller', () => {
       body: {
         name: 'any_name',
         email: 'any_email',
-        passwordConfirmation: 'any_password_confirmation',
+        passwordConfirmation: 'any_password',
       },
     }
     const httpResponse = sut.handle(httpRequest)
@@ -88,6 +88,23 @@ describe('SignUp Controller', () => {
     )
   })
 
+  test('Should return 400 if password and passwordConfirmation does not match', () => {
+    const { sut } = makeSut()
+    const httpRequest = {
+      body: {
+        name: 'any_name',
+        email: 'any_email',
+        password: 'any_password',
+        passwordConfirmation: 'invalid_confirmation',
+      },
+    }
+    const httpResponse = sut.handle(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(
+      new InvalidParamError('passwordConfirmation')
+    )
+  })
+
   test('Should return 400 if no invalid email is provided', () => {
     const { sut, emailValidatorStub } = makeSut()
     jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(false)
@@ -96,7 +113,7 @@ describe('SignUp Controller', () => {
         name: 'any_name',
         email: 'invalid_email',
         password: 'any_password',
-        passwordConfirmation: 'passwordConfirmation',
+        passwordConfirmation: 'any_password',
       },
     }
     const httpResponse = sut.handle(httpRequest)
@@ -112,7 +129,7 @@ describe('SignUp Controller', () => {
         name: 'any_name',
         email: 'invalid_email',
         password: 'any_password',
-        passwordConfirmation: 'passwordConfirmation',
+        passwordConfirmation: 'any_password',
       },
     }
     sut.handle(httpRequest)
@@ -129,7 +146,7 @@ describe('SignUp Controller', () => {
         name: 'any_name',
         email: 'any_email',
         password: 'any_password',
-        passwordConfirmation: 'passwordConfirmation',
+        passwordConfirmation: 'any_password',
       },
     }
     const httpResponse = sut.handle(httpRequest)
